@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 
 export default function LoginPage() {
@@ -16,10 +16,9 @@ export default function LoginPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors mb-5"
+          className="mb-5 rounded-md bg-blue-700 text-white px-3 py-1.5 text-sm font-medium hover:bg-blue-800 transition-colors"
         >
-          <ArrowLeft size={16} />
-          Back to Home
+          Back
         </button>
 
         <header className="mb-6 text-center">
@@ -94,7 +93,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full rounded-lg bg-blue-700 hover:bg-blue-800 text-white py-2.5 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
+            className="w-full rounded-lg bg-orange-500 hover:bg-orange-600 text-white py-2.5 font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900"
           >
             Sign In
           </button>
