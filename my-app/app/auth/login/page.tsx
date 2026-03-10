@@ -1,15 +1,27 @@
 'use client'
 
 import Link from 'next/link'
-import { Eye, EyeOff } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const router = useRouter()
 
+  
   return (
     <main className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors duration-300 px-4 py-10 sm:py-16 flex items-center justify-center">
       <section className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 shadow-sm p-6 sm:p-8">
+        <button
+          type="button"
+          onClick={() => router.push('/')}
+          className="inline-flex items-center gap-1.5 text-sm text-slate-600 dark:text-gray-400 hover:text-slate-800 dark:hover:text-gray-200 transition-colors mb-5"
+        >
+          <ArrowLeft size={16} />
+          Back to Home
+        </button>
+
         <header className="mb-6 text-center">
           <h1 className="text-2xl font-semibold text-slate-900 dark:text-gray-100 tracking-tight">
             Sign in to your account
