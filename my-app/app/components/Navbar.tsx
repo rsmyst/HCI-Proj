@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useTheme } from '../context/ThemeContext'
 
 const navLinks = [
@@ -111,14 +112,14 @@ export default function Navbar() {
             )}
           </button>
 
-          <button className="border border-white/30 text-white text-sm px-4 py-2 rounded-md
+          <Link href="/auth/register" className="border border-white/30 text-white text-sm px-4 py-2 rounded-md
             hover:bg-white/10 active:bg-white/20 transition-all duration-150">
             Register
-          </button>
-          <button className="bg-orange-500 text-white text-sm px-4 py-2 rounded-md font-medium shadow
+          </Link>
+          <Link href="/auth/login" className="bg-orange-500 text-white text-sm px-4 py-2 rounded-md font-medium shadow
             hover:bg-orange-600 hover:scale-105 active:scale-95 transition-all duration-150">
             Login
-          </button>
+          </Link>
         </div>
 
         {/* Mobile: dark toggle + hamburger */}
@@ -173,8 +174,8 @@ export default function Navbar() {
             </a>
           ))}
           <div className="flex gap-2 pt-2 border-t border-white/10">
-            <button className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors">Register</button>
-            <button className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors">Login</button>
+            <Link href="/auth/register" className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors text-center">Register</Link>
+            <Link href="/auth/login" className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors text-center">Login</Link>
           </div>
         </div>
       )}
