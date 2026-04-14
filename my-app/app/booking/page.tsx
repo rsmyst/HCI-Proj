@@ -385,9 +385,17 @@ function BookingContent() {
   const fromStn    = params.get('from')  ?? 'SURATHKAL'
   const toStn      = params.get('to')    ?? 'KSR BENGALURU'
   const journeyDate = params.get('date') ?? 'Fri, 13 Mar'
+  const journeyDateISO = params.get('dateISO') ?? ''
   const depTime    = params.get('dep')   ?? '21:56'
   const arrTime    = params.get('arr')   ?? '07:15'
   const duration   = params.get('dur')   ?? '9h 19m'
+  const searchHref = `/search?${new URLSearchParams({
+    from: fromStn,
+    to: toStn,
+    date: journeyDateISO,
+    class: classCode,
+    quota: 'General',
+  }).toString()}`
 
   const CLASS_LABELS: Record<string, string> = {
     SL: 'Sleeper (SL)',
@@ -494,6 +502,7 @@ function BookingContent() {
     reviewParams.set('from', fromStn)
     reviewParams.set('to', toStn)
     reviewParams.set('date', journeyDate)
+    reviewParams.set('dateISO', journeyDateISO)
     reviewParams.set('dep', depTime)
     reviewParams.set('arr', arrTime)
     reviewParams.set('dur', duration)
@@ -512,6 +521,21 @@ function BookingContent() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 lg:px-6 py-6">
+      <div className="mb-5 flex flex-wrap items-center gap-3">
+        <Link
+          href={searchHref}
+          className="rounded-lg border border-[#1a3c6e] bg-white px-4 py-2 text-sm font-semibold text-[#1a3c6e] hover:bg-blue-50 dark:border-blue-400 dark:bg-gray-900 dark:text-blue-300 dark:hover:bg-gray-800 transition-colors"
+        >
+          Search trains
+        </Link>
+        <Link
+          href="/dashboard"
+          className="rounded-lg bg-[#1a3c6e] px-4 py-2 text-sm font-semibold text-white hover:bg-[#214b86] transition-colors"
+        >
+          Dashboard
+        </Link>
+      </div>
+
       <div className="flex flex-col lg:flex-row gap-6">
 
         {/* ════════════════════════════════════════════
@@ -532,8 +556,8 @@ function BookingContent() {
                 </span>
               </div>
               <Link
-                href="/search"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline shrink-0 mt-1 font-medium"
+                href={searchHref}
+                className="inline-flex items-center gap-1 rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:border-[#1a3c6e] hover:text-[#1a3c6e] dark:hover:border-blue-400 dark:hover:text-blue-300 transition-colors shrink-0 mt-1"
               >
                 ← Change Train
               </Link>

@@ -4,6 +4,7 @@ import { useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Navbar from '../components/Navbar'
 import ProgressStepper from '../components/ProgressStepper'
+import Link from 'next/link'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -11,6 +12,7 @@ type AvailStatus = 'AVAILABLE' | 'RAC' | 'WL'
 
 interface DateSlot {
   label: string      // "Fri, 13 Mar"
+  isoDate?: string
   status: AvailStatus
   count: number
 }
@@ -325,6 +327,7 @@ function TrainCard({ train }: { train: Train }) {
       from: train.dep.station,
       to: train.arr.station,
       date: date.label,
+      dateISO: date.isoDate ?? inferDateISOFromLabel(date.label),
       dep: train.dep.time,
       arr: train.arr.time,
       dur: train.duration,
@@ -654,10 +657,23 @@ function buildDates(startISO: string, pattern: { status: AvailStatus; count: num
     const entry = pattern[i % pattern.length]
     return {
       label: formatShortDate(d),
+      isoDate: d.toISOString().slice(0, 10),
       status: entry.status,
       count: entry.count,
     }
   })
+}
+
+function inferDateISOFromLabel(label: string): string {
+  const match = label.match(/^\w{3},\s*(\d{1,2})\s+(\w{3})$/)
+  if (!match) return ''
+
+  const [, day, month] = match
+  const year = new Date().getFullYear()
+  const parsedDate = new Date(`${day} ${month} ${year}`)
+
+  if (Number.isNaN(parsedDate.getTime())) return ''
+  return parsedDate.toISOString().slice(0, 10)
 }
 
 function buildTrain(template: TrainTemplate, startISO: string): Train {
@@ -734,6 +750,11 @@ function SearchResults() {
   })
 
   const handleModify = () => router.push('/')
+  const bookingHref = `/booking?${new URLSearchParams({
+    from: fromStn,
+    to: toStn,
+    date: dateRaw,
+  }).toString()}`
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-950 transition-colors duration-300">
@@ -791,6 +812,12 @@ function SearchResults() {
                 &nbsp;|&nbsp;{quota}
               </p>
               <div className="flex gap-2">
+                <Link href="/dashboard" className="px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 text-sm text-white hover:bg-white/15 transition-colors">
+                  Dashboard
+                </Link>
+                <Link href={bookingHref} className="px-3 py-1.5 rounded-lg border border-white/20 bg-white/10 text-sm text-white hover:bg-white/15 transition-colors">
+                  Booking
+                </Link>
                 <button className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-sm text-gray-600 dark:text-gray-300 hover:border-[#1a3c6e] dark:hover:border-blue-400 hover:text-[#1a3c6e] transition-colors">
                   ← Prev Day
                 </button>
