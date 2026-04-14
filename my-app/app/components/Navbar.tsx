@@ -6,16 +6,17 @@ import Link from 'next/link'
 import { useTheme } from '../context/ThemeContext'
 
 const navLinks = [
-  { label: 'Home', href: '#' },
-  { label: 'Trains', href: '#' },
-  { label: 'Holidays', href: '#' },
+  { label: 'Book', href: '#booking' },
+  { label: 'Manage', href: '#manage' },
+  { label: 'Holidays', href: '#offers' },
+  { label: 'Help', href: '#help' },
+]
+
+const moreLinks = [
+  { label: 'Rail Drishti', href: '#' },
   { label: 'Catering', href: '#' },
-  {
-    label: 'Rail Drishti',
-    href: '#',
-    tooltip: 'Track live train status and running information',
-  },
-  { label: 'More', href: '#' },
+  { label: 'Tourism', href: '#' },
+  { label: 'Accessibility', href: '#help' },
 ]
 
 export default function Navbar() {
@@ -23,7 +24,7 @@ export default function Navbar() {
   const { isDark, toggleDark } = useTheme()
 
   return (
-    <nav className="bg-[#1a3c6e] dark:bg-gray-900 text-white shadow-lg transition-colors duration-300">
+    <nav className="relative z-50 bg-[#1a3c6e] dark:bg-gray-900 text-white shadow-lg transition-colors duration-300">
       {/* Utility bar */}
       <div className="bg-[#132f57] dark:bg-gray-950 px-6 py-1 flex justify-between items-center text-xs text-blue-200 dark:text-gray-400 transition-colors duration-300">
         <span>Ministry of Railways, Government of India</span>
@@ -59,27 +60,35 @@ export default function Navbar() {
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-7 text-sm font-medium">
           {navLinks.map((link) => (
-            <div key={link.label} className="relative group">
-              <a
-                href={link.href}
-                className="relative py-1 text-white/90 hover:text-white transition-colors duration-150
-                  after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0
-                  after:bg-orange-400 after:transition-all after:duration-300
-                  hover:after:w-full"
-              >
-                {link.label}
-              </a>
-              {link.tooltip && (
-                <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100
-                  transition-opacity duration-200
-                  absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-gray-900 dark:bg-gray-700 text-white
-                  text-xs rounded-md px-3 py-1.5 whitespace-nowrap z-50 shadow-lg pointer-events-none">
-                  {link.tooltip}
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 dark:bg-gray-700 rotate-45" />
-                </div>
-              )}
-            </div>
+            <a
+              key={link.label}
+              href={link.href}
+              className="relative py-2 text-white/90 hover:text-white transition-colors duration-150
+                after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0
+                after:bg-orange-400 after:transition-all after:duration-300
+                hover:after:w-full"
+            >
+              {link.label}
+            </a>
           ))}
+
+          <details className="relative group">
+            <summary className="list-none cursor-pointer py-2 text-white/90 hover:text-white transition-colors duration-150 flex items-center gap-2">
+              More
+              <span aria-hidden className="text-xs">&#9662;</span>
+            </summary>
+            <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 shadow-xl border border-slate-200 dark:border-slate-700 p-2 z-50">
+              {moreLinks.map((link) => (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  className="block px-3 py-2 rounded-lg text-sm hover:bg-slate-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          </details>
         </div>
 
         {/* Right side: dark toggle + auth */}
@@ -168,11 +177,16 @@ export default function Navbar() {
           {navLinks.map((link) => (
             <a key={link.label} href={link.href} className="hover:text-orange-300 py-1 transition-colors duration-150">
               {link.label}
-              {link.tooltip && (
-                <span className="ml-2 text-xs text-blue-300 dark:text-gray-400">— {link.tooltip}</span>
-              )}
             </a>
           ))}
+          <div className="pt-2 border-t border-white/10">
+            <div className="text-xs uppercase text-blue-200 dark:text-gray-400 tracking-wider mb-2">More</div>
+            {moreLinks.map((link) => (
+              <a key={link.label} href={link.href} className="block py-1 text-white/90 hover:text-orange-300 transition-colors">
+                {link.label}
+              </a>
+            ))}
+          </div>
           <div className="flex gap-2 pt-2 border-t border-white/10">
             <Link href="/auth/register" className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors text-center">Register</Link>
             <Link href="/auth/login" className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors text-center">Login</Link>

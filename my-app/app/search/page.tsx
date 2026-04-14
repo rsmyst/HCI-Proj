@@ -32,7 +32,135 @@ interface Train {
   classes: TrainClass[]
 }
 
+interface ClassTemplate {
+  code: string
+  label: string
+  basePrice: number
+  pattern: { status: AvailStatus; count: number }[]
+}
+
+interface TrainTemplate {
+  name: string
+  number: string
+  runsOn: boolean[]
+  dep: { time: string; station: string }
+  arr: { time: string; station: string }
+  duration: string
+  classes: ClassTemplate[]
+}
+
 // ─── Mock Data ────────────────────────────────────────────────────────────────
+
+const POPULAR_TRAIN_TEMPLATES: TrainTemplate[] = [
+  {
+    name: 'CHENNAI SHATABDI',
+    number: '12028',
+    runsOn: [true, true, true, true, true, true, false],
+    dep: { time: '06:00', station: 'BENGALURU (SBC)' },
+    arr: { time: '12:30', station: 'CHENNAI (MAS)' },
+    duration: '6h 30m',
+    classes: [
+      {
+        code: 'CC',
+        label: 'Chair Car (CC)',
+        basePrice: 645,
+        pattern: [
+          { status: 'AVAILABLE', count: 42 },
+          { status: 'AVAILABLE', count: 28 },
+          { status: 'RAC', count: 18 },
+          { status: 'AVAILABLE', count: 35 },
+          { status: 'RAC', count: 10 },
+          { status: 'WL', count: 6 },
+        ],
+      },
+      {
+        code: 'EC',
+        label: 'Executive Chair (EC)',
+        basePrice: 1250,
+        pattern: [
+          { status: 'AVAILABLE', count: 12 },
+          { status: 'AVAILABLE', count: 9 },
+          { status: 'AVAILABLE', count: 6 },
+          { status: 'AVAILABLE', count: 8 },
+          { status: 'RAC', count: 4 },
+          { status: 'RAC', count: 2 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'DECCAN EXPRESS',
+    number: '12123',
+    runsOn: [true, true, true, true, true, true, true],
+    dep: { time: '07:00', station: 'MUMBAI (CSMT)' },
+    arr: { time: '10:25', station: 'PUNE (PUNE)' },
+    duration: '3h 25m',
+    classes: [
+      {
+        code: 'CC',
+        label: 'Chair Car (CC)',
+        basePrice: 420,
+        pattern: [
+          { status: 'AVAILABLE', count: 60 },
+          { status: 'AVAILABLE', count: 44 },
+          { status: 'RAC', count: 20 },
+          { status: 'AVAILABLE', count: 32 },
+          { status: 'WL', count: 12 },
+          { status: 'RAC', count: 18 },
+        ],
+      },
+      {
+        code: '2S',
+        label: 'Second Sitting (2S)',
+        basePrice: 155,
+        pattern: [
+          { status: 'AVAILABLE', count: 120 },
+          { status: 'AVAILABLE', count: 95 },
+          { status: 'AVAILABLE', count: 80 },
+          { status: 'RAC', count: 32 },
+          { status: 'RAC', count: 20 },
+          { status: 'WL', count: 15 },
+        ],
+      },
+    ],
+  },
+  {
+    name: 'AJMER SHATABDI',
+    number: '12016',
+    runsOn: [true, true, true, true, true, true, true],
+    dep: { time: '06:05', station: 'DELHI (NDLS)' },
+    arr: { time: '10:40', station: 'JAIPUR (JP)' },
+    duration: '4h 35m',
+    classes: [
+      {
+        code: 'CC',
+        label: 'Chair Car (CC)',
+        basePrice: 535,
+        pattern: [
+          { status: 'AVAILABLE', count: 36 },
+          { status: 'AVAILABLE', count: 24 },
+          { status: 'RAC', count: 16 },
+          { status: 'AVAILABLE', count: 30 },
+          { status: 'RAC', count: 12 },
+          { status: 'WL', count: 8 },
+        ],
+      },
+      {
+        code: 'EC',
+        label: 'Executive Chair (EC)',
+        basePrice: 1095,
+        pattern: [
+          { status: 'AVAILABLE', count: 10 },
+          { status: 'AVAILABLE', count: 7 },
+          { status: 'AVAILABLE', count: 5 },
+          { status: 'AVAILABLE', count: 6 },
+          { status: 'RAC', count: 3 },
+          { status: 'RAC', count: 2 },
+        ],
+      },
+    ],
+  },
+]
 
 const TRAINS: Train[] = [
   {
@@ -505,6 +633,68 @@ function FiltersSidebar() {
 
 const SORT_OPTIONS = ['Departure', 'Duration', 'Arrival', 'Price']
 
+function formatShortDate(date: Date): string {
+  return date.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' })
+}
+
+function isNextDay(depTime: string, arrTime: string): boolean {
+  const [dh, dm] = depTime.split(':').map(Number)
+  const [ah, am] = arrTime.split(':').map(Number)
+  if (ah < dh) return true
+  if (ah === dh && am < dm) return true
+  return false
+}
+
+function buildDates(startISO: string, pattern: { status: AvailStatus; count: number }[]): DateSlot[] {
+  const base = new Date(startISO)
+  if (isNaN(base.getTime())) return []
+  return Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date(base)
+    d.setDate(base.getDate() + i)
+    const entry = pattern[i % pattern.length]
+    return {
+      label: formatShortDate(d),
+      status: entry.status,
+      count: entry.count,
+    }
+  })
+}
+
+function buildTrain(template: TrainTemplate, startISO: string): Train {
+  const depDate = new Date(startISO)
+  const arrDate = new Date(startISO)
+  if (isNextDay(template.dep.time, template.arr.time)) {
+    arrDate.setDate(arrDate.getDate() + 1)
+  }
+
+  return {
+    name: template.name,
+    number: template.number,
+    runsOn: template.runsOn,
+    dep: {
+      time: template.dep.time,
+      station: template.dep.station,
+      date: formatShortDate(depDate),
+    },
+    arr: {
+      time: template.arr.time,
+      station: template.arr.station,
+      date: formatShortDate(arrDate),
+    },
+    duration: template.duration,
+    classes: template.classes.map((cls) => ({
+      code: cls.code,
+      label: cls.label,
+      basePrice: cls.basePrice,
+      dates: buildDates(startISO, cls.pattern),
+    })),
+  }
+}
+
+function matchStation(haystack: string, needle: string): boolean {
+  return haystack.toLowerCase().includes(needle.toLowerCase())
+}
+
 function formatDate(iso: string): string {
   if (!iso) return ''
   const d = new Date(iso)
@@ -524,8 +714,18 @@ function SearchResults() {
   const quota      = params.get('quota') || 'General'
   const dateLabel  = formatDate(dateRaw)
 
+  const baseDate = dateRaw || new Date().toISOString().slice(0, 10)
+
+  const popularMatches = POPULAR_TRAIN_TEMPLATES.filter((t) =>
+    matchStation(t.dep.station, fromStn) && matchStation(t.arr.station, toStn)
+  )
+
+  const baseTrains = popularMatches.length > 0
+    ? popularMatches.map((t) => buildTrain(t, baseDate))
+    : TRAINS
+
   // Filter trains that match the searched route (case-insensitive partial match)
-  const filteredTrains = TRAINS.filter((t) => {
+  const filteredTrains = baseTrains.filter((t) => {
     const fromMatch = !params.get('from') ||
       t.dep.station.toLowerCase().includes(fromStn.toLowerCase())
     const toMatch = !params.get('to') ||
