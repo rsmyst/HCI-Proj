@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Navbar from '../components/Navbar'
 import ProgressStepper from '../components/ProgressStepper'
+import { addBookingForCurrentUser } from '../lib/booking-storage'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -67,7 +68,7 @@ function Row({ label, value, highlight }: { label: string; value: React.ReactNod
 
 // ─── Confirmation modal ───────────────────────────────────────────────────────
 
-function ConfirmModal({ total, onClose }: { total: string; onClose: () => void }) {
+function ConfirmModal({ total, pnrNumber, onClose }: { total: string; pnrNumber: string; onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
       {/* Backdrop */}
@@ -89,7 +90,7 @@ function ConfirmModal({ total, onClose }: { total: string; onClose: () => void }
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3 mb-6 text-sm">
           <p className="text-gray-400 text-xs mb-1">PNR Number</p>
           <p className="text-2xl font-bold text-[#1a3c6e] dark:text-blue-300 tracking-widest tabular-nums">
-            {Math.floor(1000000000 + Math.random() * 9000000000)}
+            {pnrNumber}
           </p>
         </div>
 
@@ -111,6 +112,7 @@ function ReviewContent() {
   const router    = useRouter()
   const [paying, setPaying]   = useState(false)
   const [confirmed, setConfirmed] = useState(false)
+  const [pnrNumber, setPnrNumber] = useState('')
 
   // Read all params passed from booking page
   const trainName   = params.get('name')      ?? 'PANCHAGANGA EXP'
@@ -119,6 +121,7 @@ function ReviewContent() {
   const fromStn     = params.get('from')      ?? 'SURATHKAL'
   const toStn       = params.get('to')        ?? 'KSR BENGALURU'
   const journeyDate = params.get('date')      ?? 'Fri, 13 Mar'
+  const journeyDateISO = params.get('dateISO') ?? ''
   const depTime     = params.get('dep')       ?? '21:56'
   const arrTime     = params.get('arr')       ?? '07:15'
   const duration    = params.get('dur')       ?? '9h 19m'
@@ -140,6 +143,26 @@ function ReviewContent() {
     setPaying(true)
     // Simulate payment gateway delay
     setTimeout(() => {
+      const generatedPnr = String(Math.floor(1000000000 + Math.random() * 9000000000))
+      setPnrNumber(generatedPnr)
+
+      addBookingForCurrentUser({
+        trainName,
+        trainNumber: trainNum,
+        classCode,
+        fromStation: fromStn,
+        toStation: toStn,
+        journeyDate,
+        journeyDateISO,
+        departureTime: depTime,
+        arrivalTime: arrTime,
+        duration,
+        paymentMethod: paymentId,
+        totalFare: parseInt(total, 10),
+        passengerCount: passengers.length || 1,
+        pnrNumber: generatedPnr,
+      })
+
       setPaying(false)
       setConfirmed(true)
     }, 1800)
@@ -315,6 +338,7 @@ function ReviewContent() {
       {confirmed && (
         <ConfirmModal
           total={parseInt(total).toLocaleString('en-IN')}
+          pnrNumber={pnrNumber}
           onClose={() => router.push('/')}
         />
       )}

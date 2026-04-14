@@ -1,9 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTheme } from '../context/ThemeContext'
+import { clearCurrentUser, getCurrentUser, type StoredUser } from '../lib/auth-storage'
 
 const navLinks = [
   { label: 'Book', href: '#booking' },
@@ -21,7 +23,25 @@ const moreLinks = [
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState<StoredUser | null>(null)
   const { isDark, toggleDark } = useTheme()
+  const router = useRouter()
+
+  useEffect(() => {
+    const syncCurrentUser = () => setCurrentUser(getCurrentUser())
+
+    syncCurrentUser()
+
+    window.addEventListener('storage', syncCurrentUser)
+    return () => window.removeEventListener('storage', syncCurrentUser)
+  }, [])
+
+  const handleLogout = () => {
+    clearCurrentUser()
+    setCurrentUser(null)
+    setMobileOpen(false)
+    router.push('/')
+  }
 
   return (
     <nav className="relative z-50 bg-[#1a3c6e] dark:bg-gray-900 text-white shadow-lg transition-colors duration-300">
@@ -121,14 +141,29 @@ export default function Navbar() {
             )}
           </button>
 
-          <Link href="/auth/register" className="border border-white/30 text-white text-sm px-4 py-2 rounded-md
-            hover:bg-white/10 active:bg-white/20 transition-all duration-150">
-            Register
-          </Link>
-          <Link href="/auth/login" className="bg-orange-500 text-white text-sm px-4 py-2 rounded-md font-medium shadow
-            hover:bg-orange-600 hover:scale-105 active:scale-95 transition-all duration-150">
-            Login
-          </Link>
+          {currentUser ? (
+            <>
+              <Link href="/dashboard" className="border border-white/30 text-white text-sm px-4 py-2 rounded-md hover:bg-white/10 active:bg-white/20 transition-all duration-150">
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="bg-orange-500 text-white text-sm px-4 py-2 rounded-md font-medium shadow hover:bg-orange-600 hover:scale-105 active:scale-95 transition-all duration-150"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link href="/auth/register" className="border border-white/30 text-white text-sm px-4 py-2 rounded-md hover:bg-white/10 active:bg-white/20 transition-all duration-150">
+                Register
+              </Link>
+              <Link href="/auth/login" className="bg-orange-500 text-white text-sm px-4 py-2 rounded-md font-medium shadow hover:bg-orange-600 hover:scale-105 active:scale-95 transition-all duration-150">
+                Login
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile: dark toggle + hamburger */}
@@ -188,8 +223,17 @@ export default function Navbar() {
             ))}
           </div>
           <div className="flex gap-2 pt-2 border-t border-white/10">
-            <Link href="/auth/register" className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors text-center">Register</Link>
-            <Link href="/auth/login" className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors text-center">Login</Link>
+            {currentUser ? (
+              <>
+                <Link href="/dashboard" className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors text-center">Dashboard</Link>
+                <button type="button" onClick={handleLogout} className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors text-center">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link href="/auth/register" className="flex-1 border border-white/30 text-white py-2 rounded-md hover:bg-white/10 transition-colors text-center">Register</Link>
+                <Link href="/auth/login" className="flex-1 bg-orange-500 text-white py-2 rounded-md font-medium hover:bg-orange-600 transition-colors text-center">Login</Link>
+              </>
+            )}
           </div>
         </div>
       )}

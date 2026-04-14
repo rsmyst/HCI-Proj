@@ -51,7 +51,7 @@ export default function LoginPage() {
     }
 
     setCurrentUser(matchedUser)
-    router.replace('/booking')
+    router.replace('/dashboard')
   }
 
   
