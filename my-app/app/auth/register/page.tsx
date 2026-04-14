@@ -3,7 +3,12 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, RefreshCw } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
+import {
+  registerStoredUser,
+  setAuthFlashMessage,
+  setPendingUsername,
+} from '../../lib/auth-storage'
 
 type FormData = {
   username: string
@@ -28,15 +33,10 @@ function generateCaptcha() {
   }
 }
 
-const initialCaptcha = {
-  question: 'What is 2 + 3?',
-  answer: '5',
-}
-
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [captchaChallenge, setCaptchaChallenge] = useState(initialCaptcha)
+  const [captchaChallenge, setCaptchaChallenge] = useState(() => generateCaptcha())
   const [errors, setErrors] = useState<FormErrors>({})
   const [statusMessage, setStatusMessage] = useState('')
   const [formData, setFormData] = useState<FormData>({
@@ -50,10 +50,6 @@ export default function RegisterPage() {
     captcha: '',
   })
   const router = useRouter()
-
-  useEffect(() => {
-    setCaptchaChallenge(generateCaptcha())
-  }, [])
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -123,14 +119,31 @@ export default function RegisterPage() {
     event.preventDefault()
 
     const nextErrors = validateForm()
-    setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
+      setErrors(nextErrors)
       setStatusMessage('Please correct the highlighted fields.')
       return
     }
 
-    setStatusMessage('Registration form validated successfully.')
+    const registrationResult = registerStoredUser({
+      username: formData.username,
+      fullName: formData.fullName,
+      email: formData.email,
+      countryCode: formData.countryCode,
+      mobile: formData.mobile,
+      password: formData.password,
+    })
+
+    if (!registrationResult.success) {
+      setErrors({ username: registrationResult.message })
+      setStatusMessage('Please correct the highlighted fields.')
+      return
+    }
+
+    setAuthFlashMessage('Account created successfully. Please sign in.')
+    setPendingUsername(formData.username.trim())
+    router.replace('/auth/login')
   }
 
   const getInputClassName = (field: keyof FormData) =>

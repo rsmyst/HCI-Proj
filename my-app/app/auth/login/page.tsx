@@ -3,11 +3,56 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import {
+  consumeAuthFlashMessage,
+  consumePendingUsername,
+  findStoredUser,
+  setCurrentUser,
+} from '../../lib/auth-storage'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
   const router = useRouter()
+
+  useEffect(() => {
+    const flashMessage = consumeAuthFlashMessage()
+    const pendingUsername = consumePendingUsername()
+
+    if (!flashMessage && !pendingUsername) return
+
+    const hydrateTimer = window.setTimeout(() => {
+      if (flashMessage) setStatusMessage(flashMessage)
+      if (pendingUsername) setUsername(pendingUsername)
+    }, 0)
+
+    return () => window.clearTimeout(hydrateTimer)
+  }, [])
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setErrorMessage('')
+    setStatusMessage('')
+
+    if (!username.trim() || !password) {
+      setErrorMessage('Enter your user name and password.')
+      return
+    }
+
+    const matchedUser = findStoredUser(username, password)
+
+    if (!matchedUser) {
+      setErrorMessage('Invalid user name or password.')
+      return
+    }
+
+    setCurrentUser(matchedUser)
+    router.replace('/booking')
+  }
 
   
   return (
@@ -30,7 +75,19 @@ export default function LoginPage() {
           </p>
         </header>
 
-        <form className="space-y-5" aria-label="Login form">
+        <form className="space-y-5" aria-label="Login form" noValidate onSubmit={handleSubmit}>
+          {(statusMessage || errorMessage) && (
+            <div
+              aria-live="polite"
+              className={`rounded-lg border px-4 py-3 text-sm ${
+                errorMessage
+                  ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200'
+              }`}
+            >
+              {errorMessage || statusMessage}
+            </div>
+          )}
           <div>
             <label
               htmlFor="username"
@@ -43,6 +100,8 @@ export default function LoginPage() {
               name="username"
               type="text"
               autoComplete="username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
               placeholder="Enter your user name"
               className="w-full rounded-lg border border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3.5 py-2.5 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition-colors"
             />
@@ -69,6 +128,8 @@ export default function LoginPage() {
                 name="password"
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
                 placeholder="Enter your password"
                 className="w-full rounded-lg border border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3.5 py-2.5 pr-11 text-sm text-slate-900 dark:text-gray-100 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500/70 focus:border-blue-500 transition-colors"
               />
