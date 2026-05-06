@@ -1,32 +1,63 @@
-import type { DashboardData } from '../data/dashboard'
+import type { DashboardData } from "../data/dashboard";
 
 const iconMap = {
   ticket: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-6 h-6"
+    >
       <path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 010 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 010-4V8z" />
       <path d="M8 8v8" />
     </svg>
   ),
   refund: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-6 h-6"
+    >
       <path d="M21 12a9 9 0 11-2.64-6.36" />
       <path d="M21 3v6h-6" />
       <path d="M7 13h6" />
     </svg>
   ),
   clock: (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-6 h-6"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 7v5l3 3" />
     </svg>
   ),
-}
+};
 
-type QuickAction = DashboardData['quickActions'][number]
+type QuickAction = DashboardData["quickActions"][number];
 
-export default function QuickActions({ actions }: { actions: QuickAction[] }) {
+export default function QuickActions({
+  actions,
+}: {
+  actions: readonly QuickAction[];
+}) {
   return (
-    <section id="manage" className="bg-white/80 dark:bg-gray-900/60 backdrop-blur py-12">
+    <section
+      id="manage"
+      className="bg-white/80 dark:bg-gray-900/60 backdrop-blur py-12"
+    >
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-end justify-between gap-4 flex-wrap mb-6">
           <div>
@@ -61,12 +92,17 @@ export default function QuickActions({ actions }: { actions: QuickAction[] }) {
               </p>
               <span className="inline-flex items-center gap-2 text-sm font-medium text-[#1a3c6e] dark:text-blue-300">
                 {action.cta}
-                <span aria-hidden className="transition-transform group-hover:translate-x-1">&rarr;</span>
+                <span
+                  aria-hidden
+                  className="transition-transform group-hover:translate-x-1"
+                >
+                  &rarr;
+                </span>
               </span>
             </a>
           ))}
         </div>
       </div>
     </section>
-  )
+  );
 }
